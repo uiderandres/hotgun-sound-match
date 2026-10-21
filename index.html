@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1B1B1B">
+<title>Shotgun Sound Match</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="stage">
+    <aside class="side-note" aria-hidden="false">
+      <p class="side-title">SHOTGUN · SOUND MATCH</p>
+      <p>Student concept prototype (ESD, Prototypage avancé). Not affiliated with Shotgun.</p>
+      <p>Path to try: <b>Search → Listen</b>, type “leave it al” or use <b>Listen audio</b> with your microphone, then buy a ticket. Your ticket stays in <b>Tickets</b> after reloading.</p>
+      <button class="side-reset" id="resetDemo" type="button">Reset demo data</button>
+    </aside>
+    <div class="device" id="device">
+      <div class="status-bar" aria-hidden="true">
+        <span class="sb-time" id="sbTime">11:46</span>
+        <span class="sb-right">
+          <svg width="36" height="16" viewBox="0 0 36 16"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1 6.2a10 10 0 0 1 14 0"/><path d="M3.5 8.8a6.4 6.4 0 0 1 9 0"/><path d="M6 11.4a2.8 2.8 0 0 1 4 0"/></g><g fill="currentColor"><rect x="20" y="11" width="2.4" height="4" rx=".6"/><rect x="24" y="8" width="2.4" height="7" rx=".6"/><rect x="28" y="5" width="2.4" height="10" rx=".6"/><rect x="32" y="2" width="2.4" height="13" rx=".6"/></g></svg>
+          <span>80%</span>
+          <svg width="9" height="15" viewBox="0 0 9 15"><rect x="2.5" y="0" width="4" height="2" rx=".5" fill="currentColor"/><rect x="0" y="1.5" width="9" height="13.5" rx="1.5" fill="currentColor"/></svg>
+        </span>
+      </div>
+      <div class="viewport" id="viewport"></div>
+      <nav class="tabbar" id="tabbar" aria-label="Main"></nav>
+      <div class="sheet-layer" id="sheetLayer" aria-hidden="true"></div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+  <script src="js/config.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/vendor/three.min.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/map3d.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
