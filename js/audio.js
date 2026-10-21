@@ -11,11 +11,14 @@
   /* ---------------- Input analysis (mic or simulated) ---------------- */
   const input = { mode: null, stream: null, analyser: null, src: null, freq: null, time: null, avgLow: 0.05, lastBeat: 0, simBpm: 120, simStart: 0, levelSmooth: 0 };
 
+  let micReq = 0; // bumps on every stop so a permission prompt that resolves late can't leave the mic on
   async function startMic() {
     stopInput();
+    const req = ++micReq;
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return { ok: false, reason: 'unsupported' };
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: true } });
+      if (req !== micReq) { stream.getTracks().forEach((t) => t.stop()); return { ok: false, reason: 'cancelled' }; }
       const c = getCtx();
       const src = c.createMediaStreamSource(stream);
       const analyser = c.createAnalyser();
@@ -29,6 +32,7 @@
   }
   function startSim(bpm = 120) { stopInput(); Object.assign(input, { mode: 'sim', simBpm: bpm, simStart: performance.now(), lastBeat: 0 }); }
   function stopInput() {
+    micReq++;
     if (input.stream) input.stream.getTracks().forEach((t) => t.stop());
     if (input.src) try { input.src.disconnect(); } catch (e) {}
     Object.assign(input, { mode: null, stream: null, src: null, analyser: null });
@@ -244,6 +248,9 @@
   ['timeupdate', 'play', 'pause', 'ended'].forEach((ev) => PLAYER.el.addEventListener(ev, () => PLAYER.emit()));
   if (!SYNTH) PLAYER.el.preload = 'none';
 
-  window.AUDIO = { getCtx, startMic, startSim, stopInput, read: (...a) => (input.mode === 'track' ? PLAYER.read() : read(...a)), useTrack() { stopInput(); input.mode = 'track'; }, Preview, PLAYER, get mode() { return input.mode; } };
+  // Never keep the microphone when the page is hidden or closed.
+  document.addEventListener('visibilitychange', () => { if (document.hidden && input.mode === 'mic') stopInput(); });
+  window.addEventListener('pagehide', () => { if (input.mode === 'mic') stopInput(); });
+  window.AUDIO = { getCtx, startMic, startSim, stopInput, read: (...a) => (input.mode === 'track' ? PLAYER.read() : read(...a)), useTrack() { stopInput(); input.mode = 'track'; }, Preview, PLAYER, get mode() { return input.mode; }, get micOn() { return !!input.stream; } };
   window.PLAYER = PLAYER;
 })();

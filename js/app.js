@@ -291,6 +291,7 @@
     const renderCard = (vid) => {
       if (!vid) { card.classList.remove('in'); $('.map-hint').classList.remove('gone'); return; }
       const v = ALL.find((x) => x.id === vid); const list = evsOf(v).sort((a, b) => (b.id === params.event) - (a.id === params.event));
+      card.dataset.venueCtx = v.id;
       card.innerHTML = `<div class="mc-head"><div><h2 class="t-heading-section">${esc(v.name)}</h2><p class="t-meta">${esc(v.address)}</p></div><button class="circle-btn" data-act="close" aria-label="Close">${icon('x')}</button></div>
         <div class="mc-list">${list.map((e) => { const t = window.DATA.trackById(e.track); return `<div class="mcard" role="button" tabindex="0" data-open="${e.id}"><div class="mc-poster">${poster(e, 11)}${playBtn(e.track, 'on-poster')}</div><div class="mc-text"><p class="mc-title clamp-2">${esc(e.title)}</p><p class="t-meta clamp-1">${esc(relDay(e))} • ${esc(e.time)} • ${priceLabel(e.price)}</p><div class="tags" style="padding-top:4px">${tagsHTML(e)}</div></div></div>`; }).join('')}</div>`;
       card.classList.add('in'); $('.map-hint').classList.add('gone'); syncPreviews();
@@ -311,7 +312,13 @@
         if (!map.ok) { $('.map-hint').textContent = 'WebGL is not available in this browser.'; return; }
         map.start(); refresh();
         if (only) { const c = map.clubs[only]; map.goal.dist = 9; map.target.set(c.x, 0, c.z); map.select(only, true); }
-        unsub = PLAYER.on((p) => map && map.setPlaying(p.current && !p.el.paused ? venueOfTrack(p.current) : null));
+        // Animate the club the preview was started from (several clubs can share a track), else the first club playing it.
+        const hosts = (vid, tid) => { const v = ALL.find((x) => x.id === vid); return !!v && v.events.some((id) => { const ev = byId(id); return ev && ev.track === tid; }); };
+        unsub = PLAYER.on((p) => {
+          if (!map) return;
+          if (!p.current || p.el.paused) { map.setPlaying(null); return; }
+          map.setPlaying(hosts(PLAYER.origin, p.current) ? PLAYER.origin : venueOfTrack(p.current));
+        });
       },
       leave() { if (unsub) unsub(); PLAYER.pause(); closeSheet(); },
       destroy() { if (map) map.destroy(); map = null; },
@@ -419,12 +426,13 @@
       if (params.source === 'mic') {
         setText('Starting microphone…', '');
         const r = await AUDIO.startMic();
-        if (!alive) return;
+        if (!alive) { AUDIO.stopInput(); return; }
         if (!r.ok) { const n = $('.sim-note'); n.hidden = false; n.textContent = r.reason === 'denied' ? 'Microphone blocked: simulating the audio input.' : 'Microphone unavailable: simulating the audio input.'; AUDIO.startSim(120); }
         meter.hidden = false;
         setText('Listening…', 'Hold your phone close to the music'); bar.style.width = '10%';
         await sleep(4800); if (!alive) return;
         recognised = findItem(window.DATA.MIC_RECOGNISED);
+        AUDIO.startSim(120); // song recognised: release the microphone, keep the animation moving with a simulated beat
         STORE.addRecentSong(recognised.id);
         setText('Got it', `${recognised.title} — ${recognised.artist}`); bar.style.width = '22%';
         await sleep(1500); if (!alive) return;
@@ -719,7 +727,9 @@
   const syncMute = () => device.querySelectorAll('[data-mute]').forEach((b) => { b.classList.toggle('on', PLAYER.muted); b.setAttribute('aria-pressed', PLAYER.muted); b.setAttribute('aria-label', PLAYER.muted ? 'Unmute' : 'Mute'); b.innerHTML = icon(PLAYER.muted ? 'volumeX' : 'volume'); });
   device.addEventListener('click', (e) => { const b = e.target.closest('[data-mute]'); if (!b) return; e.stopPropagation(); PLAYER.setMuted(!PLAYER.muted); STORE.setMuted(PLAYER.muted); syncMute(); pop(b, 1.12); toast(PLAYER.muted ? 'Sound off' : 'Sound on'); }, true);
   window.addEventListener('player-missing', (ev) => { const f = ev.detail.tried[0]; toast(`Audio file not found: add “${f.split('/').pop()}” to assets/audio`); });
-  device.addEventListener('click', (e) => { const b = e.target.closest('[data-preview]'); if (!b) return; e.stopPropagation(); e.preventDefault(); PLAYER.toggle(b.dataset.preview); pop(b, 1.12); }, true);
+  device.addEventListener('click', (e) => { const b = e.target.closest('[data-preview]'); if (!b) return; e.stopPropagation(); e.preventDefault();
+    const ctx = b.closest('[data-venue-ctx]'); PLAYER.origin = ctx ? ctx.dataset.venueCtx : null; // which club the user pressed play from
+    PLAYER.toggle(b.dataset.preview); pop(b, 1.12); }, true);
 
   /* ---------------- poster title fitting ---------------- */
   function fitTitles(root) {
