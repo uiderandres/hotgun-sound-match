@@ -8,7 +8,7 @@ Student concept for ESD M2 “Prototypage avancé” (Andres Martinez). Not affi
 - **Any computer with Python:** run `python3 serve.py` in this folder and open `http://localhost:8765`.
 - **Without a server:** opening `index.html` directly works too; if the browser blocks the microphone, “Listen audio” switches to a simulated input and says so on screen.
 - Best in Chrome. On a laptop the app shows inside a phone frame; on a phone it fills the screen.
-- “Reset demo data” (left of the phone) clears saved tickets, hearts and follows.
+- “Reset demo data” (top-right corner, on a computer) clears saved tickets, hearts and follows.
 
 ## Flow
 For you → tab bar → **Search** → three entries at the top:
