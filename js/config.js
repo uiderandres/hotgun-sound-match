@@ -1,2 +1,3 @@
-/* Public build: no music files are published; previews are generated in the browser. */
-window.CONFIG = { music: new URLSearchParams(location.search).get('music') || 'synth' };
+/* Build settings. 'files' = play the audio files in assets/audio (local version).
+   'synth' = generate previews in the browser (public version, no music files). Override with ?music=synth */
+window.CONFIG = { music: new URLSearchParams(location.search).get('music') || 'files' };

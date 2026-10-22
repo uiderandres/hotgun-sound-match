@@ -484,6 +484,15 @@
   SCREENS.event = (params) => {
     const e = byId(params.id); const item = params.match ? findItem(params.match) : null;
     const t = e.track ? window.DATA.trackById(e.track) : null;
+    // "What to expect?": the event's own preview first, then up to 3 tracks in the closest genres (lineup tracks excluded)
+    const samples = (() => {
+      if (!t) return [];
+      const used = new Set([t.id, ...(e.lineup || []).map((a) => a.track)]);
+      const words = (g) => g.toLowerCase().split(/\s+/);
+      const near = (x) => (x.genre === t.genre ? 0 : words(x.genre).some((w) => words(t.genre).includes(w)) ? 1 : 2);
+      const rest = TRACKS.filter((x) => !used.has(x.id) && x.cover).map((x, i) => ({ x, i })).sort((a, b) => near(a.x) - near(b.x) || a.i - b.i).slice(0, 3).map((o) => o.x);
+      return [t, ...rest];
+    })();
     const isMain = !!e.fictional;
     const orgs = e.organizers || [{ name: e.organizer, followers: null, line: e.venue }];
     const why = !item ? '' : item.kind === 'song' ? `Sound match with <b>“${esc(item.title)}”</b> — ${esc(item.artist)}. Retro synths over contemporary electronic production, vocal hooks, steady four-to-the-floor.` : `Sound match with <b>“${esc(item.title)}”</b> — ${esc(item.artist)} (${esc(item.genre)}): similar tempo, energy and texture.`;
@@ -505,10 +514,10 @@
           <div class="desc-wrap ${e.description.length < 240 ? 'open short' : ''}"><p class="desc t-body">${esc(e.description)}</p></div>
           ${e.description.length < 240 ? '' : `<button class="desc-toggle" data-act="desc" aria-label="Read more">${icon('chevronDown')}</button>`}
           ${e.copyNote ? '<p class="copy-note">Prototype copy based on the public Shotgun listing (read 21 Oct 2026).</p>' : ''}</div>
-        ${t ? `<div class="section"><h2 class="t-heading-section">What to expect?</h2>
-          <div class="player"><div class="track" data-track role="slider" aria-label="Preview position" aria-valuemin="0" aria-valuemax="30" tabindex="0"><span class="rail"></span><span class="fill"></span><span class="knob"></span></div><button class="play" data-act="play" aria-label="Play preview">${icon('playOutline')}</button></div>
-          <div class="player-meta"><span data-time>0:00</span><span class="clamp-1" style="text-align:right;margin-left:12px">${PLAYER.synth ? `Generated preview · ${esc(t.genre)}` : `Preview: ${esc(t.artist)} – ${esc(t.title)} [NCS]`}</span></div>
-          <p class="t-meta" style="font-size:12px;margin-top:4px">${PLAYER.synth ? 'Sound generated in the browser for this demo, not the lineup’s music.' : 'NCS track in a similar genre, not the lineup’s music.'}</p></div>` : ''}
+        ${samples.length ? `<div class="section"><h2 class="t-heading-section">What to expect?</h2>
+          <p class="t-meta" style="font-size:14px;margin:-4px 0 14px">${samples.length} sample songs in the style of this night</p>
+          <div class="lineup samples">${samples.map((s, i) => `<div class="artist sample"><span class="a-img">${!PLAYER.synth && s.cover ? `<img class="a-cover" src="${s.cover}" alt="" loading="lazy">` : artistArt({ seed: i + 2 })}${playBtn(s.id, 'a-play')}</span><span class="a-name clamp-1">${PLAYER.synth ? esc(s.genre) : esc(s.title)}</span><span class="a-sub t-meta clamp-1">${PLAYER.synth ? 'Generated preview' : `${esc(s.artist)} · ${esc(s.genre)}`}</span></div>`).join('')}</div>
+          <p class="t-meta" style="font-size:12px;margin-top:10px">${PLAYER.synth ? 'Sounds generated in the browser for this demo, not the lineup’s music.' : 'NCS tracks in a similar genre, not the lineup’s music.'}</p></div>` : ''}
         ${e.lineup ? `<div class="section"><h2 class="t-heading-section">Lineup</h2><div class="lineup">${e.lineup.map((a) => `<div class="artist"><span class="a-img">${artistArt(a)}${a.track ? playBtn(a.track, 'a-play') : ''}</span><span class="a-name">${esc(a.name)}${a.note ? `<span class="t-meta" style="display:block;font-size:13px">${esc(a.note)}</span>` : ''}</span></div>`).join('')}</div></div>` : ''}
         <div class="section"><h2 class="t-heading-section">Organized by</h2>${orgs.map((o) => `<div class="org"><span class="o-av">${artistArt({ seed: o.name.length })}</span><span class="o-text"><span class="o-name" style="display:block">${esc(o.name)}</span>${o.followers ? `<span class="t-meta" style="display:block" data-fcount="${esc(o.name)}">${(o.followers + (STORE.isFollowing(o.name) ? 1 : 0)).toLocaleString('en')} followers</span>` : ''}<span style="display:block;font-size:15px">${esc(o.line)}</span></span><button class="btn-small t-btn-sm ${STORE.isFollowing(o.name) ? 'on' : ''}" data-follow="${esc(o.name)}" data-base="${o.followers || 0}">${STORE.isFollowing(o.name) ? 'Following' : 'Follow'}</button></div>`).join('')}</div>
         ${e.genres.length ? `<div class="section"><h2 class="t-heading-section">Mood</h2><div class="mood">${e.genres.map((g) => `<span class="chip">${esc(g)}</span>`).join('')}</div></div>` : ''}
@@ -520,15 +529,6 @@
     const $ = (s) => el.querySelector(s);
     const hdr = $('.ev-header'); $('.scroll').addEventListener('scroll', (ev) => hdr.classList.toggle('solid', ev.target.scrollTop > 240), { passive: true });
     let unsub = null;
-    if (t) {
-      const fill = $('.fill'), knob = $('.knob'), tcur = $('[data-time]'), mainBtn = $('[data-act="play"]'), track = $('[data-track]');
-      const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-      const paint = (p) => { const mine = p.current === t.id; const f = mine ? p.progress() : 0; fill.style.width = f * 100 + '%'; knob.style.left = f * 100 + '%'; tcur.textContent = fmt(mine ? p.el.currentTime : 0); mainBtn.innerHTML = icon(mine && !p.el.paused ? 'pause' : 'playOutline'); };
-      unsub = PLAYER.on(paint); paint(PLAYER);
-      const seekFrom = async (clientX) => { const r = track.getBoundingClientRect(); const f = (clientX - r.left) / r.width; if (PLAYER.current !== t.id) await PLAYER.play(t.id); PLAYER.seek(f); };
-      track.addEventListener('pointerdown', (ev) => { track.setPointerCapture(ev.pointerId); seekFrom(ev.clientX); const mv = (m) => seekFrom(m.clientX); track.addEventListener('pointermove', mv); track.addEventListener('pointerup', () => track.removeEventListener('pointermove', mv), { once: true }); });
-      track.addEventListener('keydown', (k) => { if (PLAYER.current !== t.id) return; if (k.key === 'ArrowRight') PLAYER.seek(PLAYER.progress() + 0.1); if (k.key === 'ArrowLeft') PLAYER.seek(PLAYER.progress() - 0.1); });
-    }
     el.addEventListener('click', (ev) => {
       const a = ev.target.closest('[data-act]');
       if (a) {
@@ -538,7 +538,6 @@
         if (act === 'resale') toast('Can’t make it? Resell your ticket safely in the app.');
         if (act === 'desc') { $('.desc-wrap').classList.toggle('open'); }
         if (act === 'location') { const v = window.DATA.venueOfEvent(e.id); if (v) { PLAYER.pause(); nav.push('map', { venue: v.id, event: e.id }); } else toast(`${e.venue} is not on the prototype map (address not confirmed)`); }
-        if (act === 'play' && t) { PLAYER.toggle(t.id); pop(a, 1.15); }
         if (act === 'buy') { PLAYER.pause(); nav.push('checkout', { id: e.id, match: params.match }); }
         return;
       }
@@ -718,6 +717,7 @@
     device.querySelectorAll('[data-preview]').forEach((b) => {
       const id = b.dataset.preview; const on = PLAYER.isPlaying(id); const mine = PLAYER.current === id;
       b.classList.toggle('playing', on); b.style.setProperty('--p', mine ? PLAYER.progress() : 0);
+      const card = b.closest('.artist'); if (card) card.classList.toggle('playing', on);
       const pi = b.querySelector('.pi'); const want = on ? 'pause' : 'play'; if (pi && pi.dataset.icon !== want) { pi.innerHTML = icon(want); pi.dataset.icon = want; }
       b.setAttribute('aria-label', on ? 'Pause preview' : 'Play preview');
     });
