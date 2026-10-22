@@ -4,6 +4,7 @@ Student concept for ESD M2 “Prototypage avancé” (Andres Martinez). Not affi
 
 ## Open it
 - **Live:** https://uiderandres.github.io/hotgun-sound-match/ (same files as this folder; HTTPS, so the microphone works on a phone).
+- **Video of the flow (79 s, no sound):** https://uiderandres.github.io/hotgun-sound-match/demo/ (`demo/sound-match-demo.mp4`, `demo/sound-match-demo.gif`).
 - **Mac:** double-click `Abrir prototipo.command`. It starts a small local server (`python3 serve.py`, a small server with audio seeking) and opens `http://localhost:8765`. The microphone needs `localhost` or HTTPS in most browsers.
 - **Any computer with Python:** run `python3 serve.py` in this folder and open `http://localhost:8765`.
 - **Without a server:** opening `index.html` directly works too; if the browser blocks the microphone, “Listen audio” switches to a simulated input and says so on screen.
