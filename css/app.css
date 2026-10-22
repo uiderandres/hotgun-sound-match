@@ -306,7 +306,10 @@ img { display: block; max-width: 100%; }
 
 .songs-top { display: flex; align-items: center; justify-content: space-between; padding: 43px var(--space-page-margin) 0; }
 .providers { display: flex; gap: 8px; }
-.provider { height: 32px; padding: 0 10px; border-radius: 8px; font-weight: 700; font-size: 11px; display: grid; place-items: center; color: #111; }
+.providers { margin-left: auto; }
+.provider { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; transition: transform .15s; }
+.provider img { width: 36px; height: 36px; border-radius: 9px; display: block; }
+.provider:active { transform: scale(.94); }
 .song-list { display: flex; flex-direction: column; gap: 16px; padding: 0 var(--space-page-margin); }
 .song { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: var(--radius-md); background: var(--color-bg-field); text-align: left; width: 100%; transition: background .2s, transform .15s; }
 .song:active { transform: scale(.98); background: var(--color-bg-raised); }

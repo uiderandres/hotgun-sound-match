@@ -358,7 +358,7 @@
   /* ---------- Select a song (Search Audio 01 B) + NCS library ---------- */
   SCREENS.songs = () => {
     const el = h(`<section aria-label="Select a song"><div class="songs-top"><button class="circle-btn outline" data-act="back" aria-label="Back">${icon('chevronLeft')}</button>
-        <div class="providers" aria-label="Import from another app">${[['Spotify', '#1ED760'], ['Apple Music', '#FA2D55'], ['Deezer', '#A238FF'], ['SoundCloud', '#FF5500']].map(([n, c]) => `<button class="provider" style="background:${c}" data-provider="${n}">${n}</button>`).join('')}</div></div>
+        <div class="providers" aria-label="Import from another app">${[['Spotify', 'Social Media Icon.png'], ['Apple Music', 'Social Media Icon-1.png'], ['Deezer', 'Social Media Icon-2.png'], ['SoundCloud', 'Social Media Icon-3.png']].map(([n, f]) => `<button class="provider" data-provider="${n}" aria-label="Import from ${n}" title="${n}"><img src="${encodeURI('assets/img/' + f)}" alt="" width="36" height="36"></button>`).join('')}</div></div>
       <div class="scroll" style="padding-top:0;padding-bottom:96px"><div class="section" style="padding-top:24px"><h2 class="t-heading-section">Select a song</h2></div>
       <div class="song-list" data-list></div>
       ${PLAYER.synth ? '<div data-ncs hidden></div>' : `<div class="section"><div class="row between"><h2 class="t-heading-section">NCS library</h2><span class="t-meta" style="font-size:12px">30 s previews</span></div></div>

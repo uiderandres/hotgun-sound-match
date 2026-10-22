@@ -26,7 +26,7 @@ Result card → event page (with “94% sound match” explanation, “What to e
 - **Real:** the filler events (titles, dates, times, venues, prices, genres) come from shotgun.live Paris listings read on 21 Oct 2026 (Rex Club venue page, Paris techno and house pages). Posters are generated artwork, not the real posters.
 - **Fictional:** “Nightdrive: Melodic House & Indie Dance” (Sat 14 Nov, La Serre Électrique), its lineup (Lumen Coast, Marin Vale) and organisers. It is the sound-match result and the event bought at checkout.
 - **Simulated:** song recognition and matching are scripted; match scores are illustrative; event previews are NCS tracks in a similar genre, not the lineup's music; no payment is made and card numbers are never stored (only the last 4 digits are kept in memory to show the method).
-- The song list reproduces the four results shown in the Figma screen “Search Audio 01 B”. Streaming apps are shown as labelled buttons, not logos.
+- The song list reproduces the four results shown in the Figma screen “Search Audio 01 B”. Streaming apps are shown with their app icons (assets/img/Social Media Icon*.png, added by Andres).
 
 ## Persistent inputs (saved in the browser, survive reload)
 Purchased tickets (Tickets tab), Interested hearts, Follow buttons, recent song searches (shown as shortcuts on the Listen screen), last search query, draft ticket quantity, map filters (when “Save my filters for later” is ticked).
